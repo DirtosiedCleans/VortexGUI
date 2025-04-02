@@ -1,4 +1,4 @@
-> ddon't know how to code? and you want to try it? copy paste this! 🔥
+> don't know how to code? and you want to try it? copy paste this! 🔥
 
 ```lua
 local gui = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/refs/heads/main/source.lua"))()
