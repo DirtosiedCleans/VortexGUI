@@ -9,7 +9,7 @@ if you wanna contact my discord - blue app : ghfdvb @Pyroflamethrower
 - keybind system
 - config system
 - auto save settings
-- stealth mode
+- stealth mode (i don't think it works
 - works everywhere
 - position memory
 - tabs system
@@ -17,7 +17,7 @@ if you wanna contact my discord - blue app : ghfdvb @Pyroflamethrower
 - toggles
 - sliders
 - dropdowns
-- anti detection
+- anti detection (i don't think it works)
 
 ## setup
 ```lua
