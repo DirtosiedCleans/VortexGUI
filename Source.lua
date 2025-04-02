@@ -4,7 +4,8 @@ local Services = {
     Players = game:GetService("Players"),
     UserInputService = game:GetService("UserInputService"),
     HttpService = game:GetService("HttpService"),
-    CoreGui = game:GetService("CoreGui")
+    CoreGui = game:GetService("CoreGui"),
+    Lighting = game:GetService("Lighting")
 }
 
 local GuiParent = Services.RunService:IsStudio() and Services.Players.LocalPlayer.PlayerGui or Services.CoreGui
@@ -20,6 +21,11 @@ local Colors = {
     Text = Color3.fromRGB(255, 255, 255),
     Muted = Color3.fromRGB(150, 150, 150),
     Highlight = Color3.fromRGB(45, 45, 45)
+}
+
+local Animations = {
+    TweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+    BlurTweenInfo = TweenInfo.new(0.5, Enum.EasingStyle.Cubic, Enum.EasingDirection.InOut)
 }
 
 local function Create(class, properties)
@@ -70,6 +76,11 @@ function Library.new(options)
     local self = setmetatable({}, Library)
     self.Config = LoadConfig()
     
+    -- Create blur effect
+    self.Blur = Instance.new("BlurEffect")
+    self.Blur.Size = 0
+    self.Blur.Parent = Services.Lighting
+    
     self.ScreenGui = Create("ScreenGui", {
         Parent = GuiParent,
         ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
@@ -82,8 +93,39 @@ function Library.new(options)
         Size = UDim2.new(0, 600, 0, 400),
         Position = UDim2.new(.5, -300, .5, -200),
         BackgroundColor3 = Colors.Background,
+        BackgroundTransparency = 0,
         BorderSizePixel = 0
     })
+    
+    -- Add animations
+    local function animateGui(visible)
+        local transparency = visible and 0 or 1
+        local blurSize = visible and 15 or 0
+        local position = visible and UDim2.new(.5, -300, .5, -200) or UDim2.new(.5, -300, .5, -400)
+        
+        Services.TweenService:Create(self.Main, Animations.TweenInfo, {
+            BackgroundTransparency = transparency,
+            Position = position
+        }):Play()
+        
+        Services.TweenService:Create(self.Blur, Animations.BlurTweenInfo, {
+            Size = blurSize
+        }):Play()
+        
+        for _, v in pairs(self.Main:GetDescendants()) do
+            if v:IsA("Frame") or v:IsA("TextLabel") or v:IsA("TextButton") then
+                Services.TweenService:Create(v, Animations.TweenInfo, {
+                    BackgroundTransparency = transparency
+                }):Play()
+                
+                if v:IsA("TextLabel") or v:IsA("TextButton") then
+                    Services.TweenService:Create(v, Animations.TweenInfo, {
+                        TextTransparency = transparency
+                    }):Play()
+                end
+            end
+        end
+    end
     
     Corner(self.Main, 8)
     Shadow(self.Main)
@@ -185,7 +227,13 @@ end
 
 function Library:Toggle()
     self.Visible = not self.Visible
-    self.ScreenGui.Enabled = self.Visible
+    self.ScreenGui.Enabled = true
+    animateGui(self.Visible)
+    
+    if not self.Visible then
+        task.wait(0.3)
+        self.ScreenGui.Enabled = false
+    end
 end
 
 function Library:Tab(name)
@@ -222,16 +270,22 @@ function Library:Tab(name)
     tab.Button.MouseButton1Click:Connect(function()
         if self.ActiveTab then
             self.ActiveTab.Container.Visible = false
-            self.ActiveTab.Button.BackgroundColor3 = Colors.Highlight
+            Services.TweenService:Create(self.ActiveTab.Button, Animations.TweenInfo, {
+                BackgroundColor3 = Colors.Highlight
+            }):Play()
         end
         
         tab.Container.Visible = true
-        tab.Button.BackgroundColor3 = Colors.Accent
+        Services.TweenService:Create(tab.Button, Animations.TweenInfo, {
+            BackgroundColor3 = Colors.Accent
+        }):Play()
         self.ActiveTab = tab
     end)
     
     if not self.ActiveTab then
-        tab.Button.MouseButton1Click:Fire()
+        task.spawn(function()
+            tab.Button.MouseButton1Click:Connect(function() end):Fire()
+        end)
     end
     
     function tab:Button(text, callback)
