@@ -21,7 +21,7 @@ if you wanna contact my discord - blue app : ghfdvb @Pyroflamethrower
 
 ## setup
 ```lua
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/refs/heads/main/source.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/refs/heads/main/Source.lua"))()
 ```
 
 check USAGE.md for examples and settings
