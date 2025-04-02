@@ -1,7 +1,7 @@
 > don't know how to code? and you want to try it? copy paste this! 🔥
 
 ```lua
-local gui = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/refs/heads/main/source.lua"))()
+local gui = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/refs/heads/main/Source.lua"))()
 
 -- basic window
 local window = gui.new({
