@@ -47,20 +47,6 @@ local function getTheme()
     return settings.Theme.Presets[settings.Theme.Current] or settings.Theme.Presets.Purple
 end
 
-local function playSound(type)
-    local settings = getSettings()
-    if not settings.UI.Sounds.Enabled then return end
-    
-    pcall(function()
-        local sound = Instance.new("Sound")
-        sound.SoundId = settings.UI.Sounds[type] or settings.UI.Sounds.Click
-        sound.Volume = settings.UI.Sounds.Volume
-        sound.Parent = CoreGui
-        sound:Play()
-        game:GetService("Debris"):AddItem(sound, 1)
-    end)
-end
-
 local function createNotification(options)
     local theme = getTheme()
     local settings = getSettings()
