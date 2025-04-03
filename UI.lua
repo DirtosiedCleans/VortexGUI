@@ -194,6 +194,24 @@ function Vortex:Window(title)
     
     Instance.new("UICorner", topbar).CornerRadius = UDim.new(0, 8)
     
+    local tabContainer = Instance.new("Frame")
+    tabContainer.Name = "TabContainer"
+    tabContainer.Size = UDim2.new(0, 150, 1, -40)
+    tabContainer.Position = UDim2.new(0, 0, 0, 40)
+    tabContainer.BackgroundColor3 = theme.Secondary
+    tabContainer.Parent = main
+    
+    Instance.new("UICorner", tabContainer).CornerRadius = UDim.new(0, 8)
+    
+    local contentContainer = Instance.new("Frame")
+    contentContainer.Name = "ContentContainer"
+    contentContainer.Size = UDim2.new(1, -150, 1, -40)
+    contentContainer.Position = UDim2.new(0, 150, 0, 40)
+    contentContainer.BackgroundColor3 = theme.Background
+    contentContainer.Parent = main
+    
+    Instance.new("UICorner", contentContainer).CornerRadius = UDim.new(0, 8)
+    
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Text = title
     titleLabel.Size = UDim2.new(1, -100, 1, 0)
