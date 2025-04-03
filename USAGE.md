@@ -1,249 +1,110 @@
-> don't know how to code? and you want to try it? copy paste this! 🔥
+# vortex ui & notif guide aka VortexNU guide
 
+yo skids, here's how to make this thing work (even on your trash executor)
+
+## loading this beast
 ```lua
-local gui = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/refs/heads/main/Source.lua"))()
+-- grab both of these bad boys
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
+```
 
--- basic window
-local window = gui.new({
-    Title = "vortex",
-    Drag = true
-})
+## making stuff work
+```lua
+-- this stores your window (like a box that holds your hacks)
+local window = VortexUI:Window("vortex on top")
 
--- combat tab
-local combatTab = window:Tab("combat")
+-- tabs are like pages in your hack menu
+local MainTab = VortexUI:Tab(window, "hacks")
+local FunTab = VortexUI:Tab(window, "fun stuff")
 
--- kill aura
-combatTab:Toggle("kill aura", false, function(state)
-    _G.killaura = state
-    while _G.killaura do
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                if (player.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 10 then
-                    player.Character.Humanoid.Health = 0
-                end
-            end
-        end
-        wait()
+-- buttons do stuff when clicked (big brain)
+VortexUI:Button(MainTab, "kill everyone", function()
+    -- this shows a cool notification when you click
+    VortexUI:Notify("boom", "everyone died lol")
+end)
+
+-- toggles are like on/off switches
+VortexUI:Toggle(MainTab, "auto farm", function(on)
+    if on then
+        -- notification when you turn something on
+        VortexUI:Notify("farming", "getting rich rn")
+    else
+        -- notification when you turn it off
+        VortexUI:Notify("stopped", "no more money sad")
     end
 end)
 
--- player tab
-local playerTab = window:Tab("player")
-
--- god mode
-playerTab:Toggle("god mode", false, function(state)
-    game.Players.LocalPlayer.Character.Humanoid.Health = state and math.huge or 100
+-- sliders let you pick numbers (like speed hacks)
+VortexUI:Slider(MainTab, "walkspeed", 16, 500, function(speed)
+    -- makes you go zoom
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
+    VortexUI:Notify("speed", "zooming at " .. speed)
 end)
 
--- walkspeed
-playerTab:Slider("speed", 16, 500, 16, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+-- dropdowns let you pick from a list
+VortexUI:Dropdown(MainTab, "teleport", {"spawn", "shop", "boss"}, function(where)
+    VortexUI:Notify("teleport", "going to " .. where)
 end)
 ```
 
-### settings
+## quick test script (copy paste this)
 ```lua
-getgenv().vortex_settings = {
-    keybind = "RightControl"  -- toggle key
-}
-```
+-- load the good stuff
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
 
-### combat tab
-```lua
-local combatTab = window:Tab("combat")
+-- make your hack menu
+local window = VortexUI:Window("vortex test")
 
--- instant kill
-combatTab:Button("kill all", function()
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            player.Character.Humanoid.Health = 0
-        end
-    end
+-- make some pages for your hacks
+local MainTab = VortexUI:Tab(window, "hacks")
+local FunTab = VortexUI:Tab(window, "fun")
+
+-- add kill button
+VortexUI:Button(MainTab, "kill all", function()
+    VortexUI:Notify("boom", "everyone died")
 end)
 
--- kill aura
-combatTab:Toggle("kill aura", false, function(state)
-    _G.killaura = state
-    while _G.killaura do
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                if (player.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 10 then
-                    player.Character.Humanoid.Health = 0
-                end
-            end
-        end
-        wait()
-    end
+-- add auto farm toggle
+VortexUI:Toggle(MainTab, "auto farm", function(on)
+    VortexUI:Notify("farming", on and "getting rich" or "stopped")
 end)
 
--- reach
-combatTab:Slider("reach", 1, 50, 10, function(value)
-    _G.reach = value
-end)
-```
-
-### player tab
-```lua
-local playerTab = window:Tab("player")
-
--- god mode
-playerTab:Toggle("god mode", false, function(state)
-    game.Players.LocalPlayer.Character.Humanoid.Health = state and math.huge or 100
+-- add speed hack
+VortexUI:Slider(MainTab, "speed", 16, 500, function(speed)
+    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
 end)
 
--- walkspeed
-playerTab:Slider("speed", 16, 500, 16, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-end)
-
--- jumppower
-playerTab:Slider("jump", 50, 500, 50, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
-end)
-
--- noclip
-playerTab:Toggle("noclip", false, function(state)
-    _G.noclip = state
-    game:GetService("RunService").Stepped:Connect(function()
-        if _G.noclip then
-            game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
-        end
-    end)
-end)
-```
-
-### teleport tab
-```lua
-local teleportTab = window:Tab("teleport")
-
--- locations
-teleportTab:Dropdown("teleport", {"spawn", "shop", "boss"}, function(selected)
-    local locations = {
-        spawn = CFrame.new(0, 10, 0),
-        shop = CFrame.new(100, 10, 100),
-        boss = CFrame.new(0, 10, 500)
-    }
-    
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = locations[selected]
-end)
-
--- player tp
-teleportTab:Dropdown("tp to player", function()
-    local players = {}
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            table.insert(players, player.Name)
-        end
-    end
-    return players
-end, function(selected)
-    local player = game.Players:FindFirstChild(selected)
-    if player then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
-    end
-end)
-```
-
-### full example
-```lua
-local gui = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/refs/heads/main/source.lua"))()
-
-getgenv().vortex_settings = {
-    keybind = "RightControl"
-}
-
-local window = gui.new({
-    Title = "vortex",
-    Drag = true
-})
-
--- combat
-local combatTab = window:Tab("combat")
-
-combatTab:Button("kill all", function()
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            player.Character.Humanoid.Health = 0
-        end
-    end
-end)
-
-combatTab:Toggle("kill aura", false, function(state)
-    _G.killaura = state
-    while _G.killaura do
-        for _, player in pairs(game.Players:GetPlayers()) do
-            if player ~= game.Players.LocalPlayer then
-                if (player.Character.HumanoidRootPart.Position - game.Players.LocalPlayer.Character.HumanoidRootPart.Position).Magnitude < 10 then
-                    player.Character.Humanoid.Health = 0
-                end
-            end
-        end
-        wait()
-    end
-end)
-
-combatTab:Slider("reach", 1, 50, 10, function(value)
-    _G.reach = value
-end)
-
--- player
-local playerTab = window:Tab("player")
-
-playerTab:Toggle("god mode", false, function(state)
-    game.Players.LocalPlayer.Character.Humanoid.Health = state and math.huge or 100
-end)
-
-playerTab:Slider("speed", 16, 500, 16, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-end)
-
-playerTab:Slider("jump", 50, 500, 50, function(value)
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
-end)
-
-playerTab:Toggle("noclip", false, function(state)
-    _G.noclip = state
-    game:GetService("RunService").Stepped:Connect(function()
-        if _G.noclip then
-            game.Players.LocalPlayer.Character.Humanoid:ChangeState(11)
+-- add bobux button (totally real)
+VortexUI:Button(FunTab, "free bobux", function()
+    VortexUI:Question("bobux", "want free bobux?", function(answer)
+        if answer then
+            VortexUI:Notify("nice", "enjoy being rich")
+        else
+            VortexUI:Notify("bruh", "your loss")
         end
     end)
 end)
 
--- teleport
-local teleportTab = window:Tab("teleport")
-
-teleportTab:Dropdown("teleport", {"spawn", "shop", "boss"}, function(selected)
-    local locations = {
-        spawn = CFrame.new(0, 10, 0),
-        shop = CFrame.new(100, 10, 100),
-        boss = CFrame.new(0, 10, 500)
-    }
-    
-    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = locations[selected]
-end)
-
-teleportTab:Dropdown("tp to player", function()
-    local players = {}
-    for _, player in pairs(game.Players:GetPlayers()) do
-        if player ~= game.Players.LocalPlayer then
-            table.insert(players, player.Name)
-        end
-    end
-    return players
-end, function(selected)
-    local player = game.Players:FindFirstChild(selected)
-    if player then
-        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = player.Character.HumanoidRootPart.CFrame
-    end
-end)
-
--- settings
-local settingsTab = window:Tab("settings")
-
-settingsTab:Keybind("toggle gui", "RightControl", function(key)
-    getgenv().vortex_settings.keybind = key
-end)
+-- let everyone know you loaded
+VortexUI:Notify("loaded", "vortex ready to hack")
 ```
 
-made by mxxer
+## cool stuff to know
+- press RightShift to hide/show your hacks
+- notifications stack up nicely
+- works on any executor (even the free ones)
+- saves your settings automatically
+- has cool sounds and animations
+
+## supported executors
+these work best:
+- Velocity (the fast one)
+- Swift (the smooth one)
+- AWP (the pro one)
+- Atomic (the boom one)
+
+if your executor is trash tier, it'll still work but in potato mode
+
+made by mxxer (skid it if you want but don't sell it you nerd)
