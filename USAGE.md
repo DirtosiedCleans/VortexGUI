@@ -1,142 +1,127 @@
-listen up skids, ima teach you how to code like a sigma in 1 minute
-
-## first: yoink these
+## step 1: settings
+put this at the TOP of your script:
 ```lua
--- put these at the TOP of your script (very important)
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
+-- settings for both ui and notifications
+getgenv().VortexSettings = {
+    UI = {
+        Theme = "Blue",          -- Blue, Red, Green, Purple, Custom
+        CustomColors = {
+            Background = Color3.fromRGB(25, 25, 25),
+            Text = Color3.fromRGB(255, 255, 255),
+            Accent = Color3.fromRGB(0, 170, 255)
+        },
+        Keybind = Enum.KeyCode.RightShift,  -- key to hide/show
+        SaveSettings = true      -- remember settings
+    },
+    Notifications = {
+        Enabled = true,          -- show notifications
+        Position = "BottomRight",-- where they show up
+        Limit = 5,              -- max at once
+        Sounds = true,          -- play sounds
+        Duration = 5            -- how long they stay
+    }
+}
 ```
 
-## second: make your hack menu
+## step 2: load scripts
+put this AFTER your settings:
 ```lua
--- this makes your main hack menu window (like other guis)
--- put this AFTER the loadstrings
-local vortex = VortexUI:Window("my sigma script")
-
--- this makes pages for different hacks (like tabs in chrome)
-local MainHacks = VortexUI:Tab(vortex, "main hacks")    -- first page
-local PlayerHacks = VortexUI:Tab(vortex, "player")      -- second page
-local FunStuff = VortexUI:Tab(vortex, "fun stuff")      -- third page
+-- load both ui and notifications
+local Vortex = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
+local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
 ```
 
-## third: add your hacks
-
-### buttons (click to activate)
+## step 3: make your script
+put this AFTER loading the scripts:
 ```lua
--- buttons do something when clicked
-VortexUI:Button(MainHacks, "kill all", function()
-    -- this runs when button clicked
-    game.Players.LocalPlayer.Character.Humanoid.Health = 0
-    -- show cool notification
-    VortexUI:Notify("boom", "everyone died lol")
+-- make your main window
+local MyScript = Vortex:Window("my sigma script")
+
+-- make pages for your hacks
+local MainPage = Vortex:Page(MyScript, "main")
+local PlayerPage = Vortex:Page(MyScript, "player")
+
+-- add buttons to main page
+Vortex:Button(MainPage, "kill all", function()
+    Notify:Success("boom", "everyone died")
 end)
-```
 
-### toggles (on/off switches)
-```lua
--- toggles are like light switches
-VortexUI:Toggle(MainHacks, "auto farm", function(on)
-    -- 'on' is true when enabled, false when disabled
+-- add toggles
+Vortex:Toggle(MainPage, "auto farm", function(on)
     if on then
-        VortexUI:Notify("farming", "getting rich rn")
-        -- put your farming loop here
+        Notify:Success("farming", "getting rich")
     else
-        VortexUI:Notify("stopped", "enough money for today")
-        -- stop your farming loop here
+        Notify:Warning("stopped", "no more money")
     end
 end)
-```
 
-### sliders (pick a number)
-```lua
--- sliders let you choose numbers (like speed)
-VortexUI:Slider(PlayerHacks, "walkspeed", 16, 500, function(speed)
-    -- speed is the number they picked
+-- add sliders
+Vortex:Slider(PlayerPage, "speed", 16, 500, function(speed)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
-    VortexUI:Notify("speed", "zooming at " .. speed)
-end)
-```
-
-### dropdowns (pick from list)
-```lua
--- dropdowns are like choosing from a menu
-VortexUI:Dropdown(FunStuff, "teleport", {
-    "spawn",        -- option 1
-    "shop",         -- option 2
-    "secret room"   -- option 3
-}, function(picked)
-    -- picked is what they chose
-    VortexUI:Notify("teleport", "taking you to " .. picked)
-end)
-```
-
-## quick copy-paste test script
-```lua
--- STEP 1: load the good stuff
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
-
--- STEP 2: make your hack menu
-local vortex = VortexUI:Window("sigma script v1")
-
--- STEP 3: make your pages
-local MainHacks = VortexUI:Tab(vortex, "main")
-local PlayerMods = VortexUI:Tab(vortex, "player")
-local TrollStuff = VortexUI:Tab(vortex, "troll")
-
--- STEP 4: add hacks to main page
-VortexUI:Button(MainHacks, "kill all", function()
-    VortexUI:Notify("boom", "everyone died lol")
+    Notify:Success("speed", "zooming at " .. speed)
 end)
 
-VortexUI:Toggle(MainHacks, "auto farm", function(on)
-    VortexUI:Notify("farming", on and "getting rich" or "stopped")
-end)
-
--- STEP 5: add player mods
-VortexUI:Slider(PlayerMods, "walkspeed", 16, 500, function(speed)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
-end)
-
-VortexUI:Slider(PlayerMods, "jumppower", 50, 500, function(jump)
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = jump
-end)
-
--- STEP 6: add troll stuff
-VortexUI:Button(TrollStuff, "free bobux", function()
-    VortexUI:Notify("scammed", "you actually believed this lol")
-end)
-
-VortexUI:Dropdown(TrollStuff, "teleport", {
+-- add dropdowns
+Vortex:Dropdown(PlayerPage, "teleport", {
     "spawn",
     "shop",
-    "secret room",
-    "admin base"
+    "boss room"
 }, function(place)
-    VortexUI:Notify("teleport", "taking you to " .. place)
+    Notify:Success("teleport", "going to " .. place)
 end)
 
--- STEP 7: let them know it loaded
-VortexUI:Notify("loaded", "sigma script ready to hack")
+-- add color picker
+Vortex:ColorPicker(PlayerPage, "esp color", Color3.fromRGB(255, 0, 0), function(color)
+    Notify:Success("color", "changed esp color")
+end)
 ```
 
-## sigma tips
-- press RightShift to hide/show your hacks
-- notifications stack up on the right
-- works on trash executors (but in potato mode)
-- saves your settings automatically
-- has cool sounds and animations
+## quick test script
+copy paste this to test everything:
+```lua
+-- settings
+getgenv().VortexSettings = {
+    UI = {
+        Theme = "Blue",
+        SaveSettings = true
+    },
+    Notifications = {
+        Enabled = true,
+        Limit = 5
+    }
+}
 
-## how to be sigma
-1. put loadstrings at TOP of script
-2. make window FIRST
-3. make tabs SECOND
-4. add hacks to tabs THIRD
-5. test each hack FOURTH
-6. notify when stuff happens
-7. save your settings
-8. make it look cool
-9. dont make it obvious
-10. dont sell skidded scripts ( or you hate god and you are gay )
+-- load scripts
+local Vortex = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
+local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
 
-made by mxxer (skid it but dont sell it or youre beta)
+-- make script
+local MyScript = Vortex:Window("test script")
+local MainPage = Vortex:Page(MyScript, "main")
+
+-- add test button
+Vortex:Button(MainPage, "test", function()
+    Notify:Success("works", "everything is working!")
+end)
+
+-- let you know it loaded
+Notify:Success("loaded", "test script ready")
+```
+
+## where to put scripts
+1. open your executor
+2. make new file
+3. paste settings at top
+4. paste loadstrings next
+5. paste your script last
+6. press run
+
+## tips
+- settings must be at TOP
+- loadstrings must be AFTER settings
+- your script must be AFTER loadstrings
+- notifications work with ui settings
+- press RightShift to hide/show
+- saves settings automatically
+
+made by mxxer (skid it but dont sell it)
