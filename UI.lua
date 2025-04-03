@@ -98,16 +98,32 @@ local function playSound(type)
     game:GetService("Debris"):AddItem(sound, 1)
 end
 
-function Vortex:Window(title)
+function Vortex:Window(windowTitle)
     if not checkExecutor() then return end
     loadSettings()
     
-    local window = {Tabs = {}}
-    local theme = VortexSettings.Theme.Presets[VortexSettings.Theme.Current]
+    local window = {
+        Tabs = {},
+        Title = windowTitle or "Vortex UI"
+    }
     
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "VortexUI"
-    gui.Parent = CoreGui
+    local theme = VortexSettings.Theme.Presets[VortexSettings.Theme.Current]
+    if not theme then theme = VortexSettings.Theme.Presets.Purple end
+    
+    local success, gui = pcall(function()
+        local newGui = Instance.new("ScreenGui")
+        newGui.Name = "VortexUI"
+        
+        -- Handle different security contexts
+        pcall(function() newGui.Parent = game:GetService("CoreGui") end)
+        if not newGui.Parent then
+            newGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+        end
+        
+        return newGui
+    end)
+    
+    if not success then return nil end
     
     local main = Instance.new("Frame")
     main.Name = "Main"
@@ -127,7 +143,7 @@ function Vortex:Window(title)
     Instance.new("UICorner", topbar).CornerRadius = UDim.new(0, 8)
     
     local title = Instance.new("TextLabel")
-    title.Text = title
+    title.Text = window.Title
     title.Size = UDim2.new(1, -100, 1, 0)
     title.Position = UDim2.new(0, 15, 0, 0)
     title.BackgroundTransparency = 1
