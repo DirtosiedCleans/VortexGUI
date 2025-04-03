@@ -1,127 +1,179 @@
-## step 1: settings
-put this at the TOP of your script:
+# Vortex UI Library
+
+## Loading
 ```lua
--- settings for both ui and notifications
+local Vortex = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexGUI/main/Gui.lua"))()
+local VortexNotif = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexGUI/main/Notif.lua"))()
+
 getgenv().VortexSettings = {
-    UI = {
-        Theme = "Blue",          -- Blue, Red, Green, Purple, Custom
-        CustomColors = {
-            Background = Color3.fromRGB(25, 25, 25),
-            Text = Color3.fromRGB(255, 255, 255),
-            Accent = Color3.fromRGB(0, 170, 255)
-        },
-        Keybind = Enum.KeyCode.RightShift,  -- key to hide/show
-        SaveSettings = true      -- remember settings
+    Theme = {
+        Current = "Purple",
     },
-    Notifications = {
-        Enabled = true,          -- show notifications
-        Position = "BottomRight",-- where they show up
-        Limit = 5,              -- max at once
-        Sounds = true,          -- play sounds
-        Duration = 5            -- how long they stay
-    }
-}
-```
-
-## step 2: load scripts
-put this AFTER your settings:
-```lua
--- load both ui and notifications
-local Vortex = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
-local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
-```
-
-## step 3: make your script
-put this AFTER loading the scripts:
-```lua
--- make your main window
-local MyScript = Vortex:Window("my sigma script")
-
--- make pages for your hacks
-local MainPage = Vortex:Page(MyScript, "main")
-local PlayerPage = Vortex:Page(MyScript, "player")
-
--- add buttons to main page
-Vortex:Button(MainPage, "kill all", function()
-    Notify:Success("boom", "everyone died")
-end)
-
--- add toggles
-Vortex:Toggle(MainPage, "auto farm", function(on)
-    if on then
-        Notify:Success("farming", "getting rich")
-    else
-        Notify:Warning("stopped", "no more money")
-    end
-end)
-
--- add sliders
-Vortex:Slider(PlayerPage, "speed", 16, 500, function(speed)
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
-    Notify:Success("speed", "zooming at " .. speed)
-end)
-
--- add dropdowns
-Vortex:Dropdown(PlayerPage, "teleport", {
-    "spawn",
-    "shop",
-    "boss room"
-}, function(place)
-    Notify:Success("teleport", "going to " .. place)
-end)
-
--- add color picker
-Vortex:ColorPicker(PlayerPage, "esp color", Color3.fromRGB(255, 0, 0), function(color)
-    Notify:Success("color", "changed esp color")
-end)
-```
-
-## quick test script
-copy paste this to test everything:
-```lua
--- settings
-getgenv().VortexSettings = {
     UI = {
-        Theme = "Blue",
-        SaveSettings = true
+        Keybind = Enum.KeyCode.RightShift,
+        Sounds = {
+            Enabled = true,
+            Volume = 0.5
+        }
     },
     Notifications = {
         Enabled = true,
-        Limit = 5
+        Position = "BottomRight",
+        Limit = 5,
+        Duration = 5
+    },
+    AutoReport = {
+        Enabled = true,
+        Webhook = "your_webhook_here"
     }
 }
 
--- load scripts
-local Vortex = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
-local Notify = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
-
--- make script
-local MyScript = Vortex:Window("test script")
-local MainPage = Vortex:Page(MyScript, "main")
-
--- add test button
-Vortex:Button(MainPage, "test", function()
-    Notify:Success("works", "everything is working!")
-end)
-
--- let you know it loaded
-Notify:Success("loaded", "test script ready")
+local Window = Vortex:Window("Vortex")
 ```
 
-## where to put scripts
-1. open your executor
-2. make new file
-3. paste settings at top
-4. paste loadstrings next
-5. paste your script last
-6. press run
+## Creating Tabs
+```lua
+local MainTab = Window:Tab("Main")
+local SettingsTab = Window:Tab("Settings")
+```
 
-## tips
-- settings must be at TOP
-- loadstrings must be AFTER settings
-- your script must be AFTER loadstrings
-- notifications work with ui settings
-- press RightShift to hide/show
-- saves settings automatically
+## UI Elements
 
-made by mxxer (skid it but dont sell it)
+### Button
+```lua
+MainTab:Button({
+    Name = "Kill All",
+    Callback = function()
+        VortexNotif:Success("Action", "Button Clicked")
+    end
+})
+```
+
+### Toggle
+```lua
+MainTab:Toggle({
+    Name = "God Mode",
+    Default = false,
+    Callback = function(State)
+        VortexNotif:Success("Toggle", State and "On" or "Off")
+    end
+})
+```
+
+### Slider
+```lua
+MainTab:Slider({
+    Name = "Speed",
+    Min = 16,
+    Max = 500,
+    Default = 16,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end
+})
+```
+
+### Dropdown
+```lua
+MainTab:Dropdown({
+    Name = "Teleport",
+    Options = {"Spawn", "Shop", "Boss"},
+    Callback = function(Option)
+        VortexNotif:Success("Selected", Option)
+    end
+})
+```
+
+## Notifications
+
+### Success
+```lua
+VortexNotif:Success("Title", "Message", 5)
+```
+
+### Error
+```lua
+VortexNotif:Error("Error", "Something went wrong", 5)
+```
+
+### Warning
+```lua
+VortexNotif:Warning("Warning", "Be careful", 5)
+```
+
+### Question
+```lua
+VortexNotif:Question("Confirm", "Are you sure?", function(Confirmed)
+    if Confirmed then
+        VortexNotif:Success("Yes", "Action confirmed")
+    else
+        VortexNotif:Error("No", "Action cancelled")
+    end
+end)
+```
+
+## Complete Example
+```lua
+local Vortex = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexGUI/main/Gui.lua"))()
+local VortexNotif = loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexGUI/main/Notif.lua"))()
+
+local Window = Vortex:Window("Vortex Hub")
+local MainTab = Window:Tab("Main")
+local SettingsTab = Window:Tab("Settings")
+
+MainTab:Button({
+    Name = "Kill All",
+    Callback = function()
+        VortexNotif:Success("Kill All", "Players eliminated")
+    end
+})
+
+MainTab:Toggle({
+    Name = "ESP",
+    Default = false,
+    Callback = function(State)
+        VortexNotif:Success("ESP", State and "Enabled" or "Disabled")
+    end
+})
+
+MainTab:Slider({
+    Name = "Speed",
+    Min = 16,
+    Max = 500,
+    Default = 16,
+    Callback = function(Value)
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = Value
+    end
+})
+
+SettingsTab:Dropdown({
+    Name = "Theme",
+    Options = {"Blue", "Red", "Green", "Purple"},
+    Callback = function(Theme)
+        VortexSettings.Theme.Current = Theme
+    end
+})
+
+SettingsTab:Toggle({
+    Name = "UI Sounds",
+    Default = true,
+    Callback = function(State)
+        VortexSettings.UI.Sounds.Enabled = State
+    end
+})
+
+SettingsTab:Slider({
+    Name = "Notification Duration",
+    Min = 1,
+    Max = 10,
+    Default = 5,
+    Callback = function(Value)
+        VortexSettings.Notifications.Duration = Value
+    end
+})
+
+VortexNotif:Success("Loaded", "Vortex Hub is ready!")
+```
+
+## Contact
+Discord: @Mxxer - mxxeralt2s
