@@ -1,110 +1,142 @@
-# vortex ui & notif guide aka VortexNU guide
+listen up skids, ima teach you how to code like a sigma in 1 minute
 
-yo skids, here's how to make this thing work (even on your trash executor)
-
-## loading this beast
+## first: yoink these
 ```lua
--- grab both of these bad boys
+-- put these at the TOP of your script (very important)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
 ```
 
-## making stuff work
+## second: make your hack menu
 ```lua
--- this stores your window (like a box that holds your hacks)
-local window = VortexUI:Window("vortex on top")
+-- this makes your main hack menu window (like other guis)
+-- put this AFTER the loadstrings
+local vortex = VortexUI:Window("my sigma script")
 
--- tabs are like pages in your hack menu
-local MainTab = VortexUI:Tab(window, "hacks")
-local FunTab = VortexUI:Tab(window, "fun stuff")
+-- this makes pages for different hacks (like tabs in chrome)
+local MainHacks = VortexUI:Tab(vortex, "main hacks")    -- first page
+local PlayerHacks = VortexUI:Tab(vortex, "player")      -- second page
+local FunStuff = VortexUI:Tab(vortex, "fun stuff")      -- third page
+```
 
--- buttons do stuff when clicked (big brain)
-VortexUI:Button(MainTab, "kill everyone", function()
-    -- this shows a cool notification when you click
+## third: add your hacks
+
+### buttons (click to activate)
+```lua
+-- buttons do something when clicked
+VortexUI:Button(MainHacks, "kill all", function()
+    -- this runs when button clicked
+    game.Players.LocalPlayer.Character.Humanoid.Health = 0
+    -- show cool notification
     VortexUI:Notify("boom", "everyone died lol")
 end)
+```
 
--- toggles are like on/off switches
-VortexUI:Toggle(MainTab, "auto farm", function(on)
+### toggles (on/off switches)
+```lua
+-- toggles are like light switches
+VortexUI:Toggle(MainHacks, "auto farm", function(on)
+    -- 'on' is true when enabled, false when disabled
     if on then
-        -- notification when you turn something on
         VortexUI:Notify("farming", "getting rich rn")
+        -- put your farming loop here
     else
-        -- notification when you turn it off
-        VortexUI:Notify("stopped", "no more money sad")
+        VortexUI:Notify("stopped", "enough money for today")
+        -- stop your farming loop here
     end
 end)
+```
 
--- sliders let you pick numbers (like speed hacks)
-VortexUI:Slider(MainTab, "walkspeed", 16, 500, function(speed)
-    -- makes you go zoom
+### sliders (pick a number)
+```lua
+-- sliders let you choose numbers (like speed)
+VortexUI:Slider(PlayerHacks, "walkspeed", 16, 500, function(speed)
+    -- speed is the number they picked
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
     VortexUI:Notify("speed", "zooming at " .. speed)
 end)
+```
 
--- dropdowns let you pick from a list
-VortexUI:Dropdown(MainTab, "teleport", {"spawn", "shop", "boss"}, function(where)
-    VortexUI:Notify("teleport", "going to " .. where)
+### dropdowns (pick from list)
+```lua
+-- dropdowns are like choosing from a menu
+VortexUI:Dropdown(FunStuff, "teleport", {
+    "spawn",        -- option 1
+    "shop",         -- option 2
+    "secret room"   -- option 3
+}, function(picked)
+    -- picked is what they chose
+    VortexUI:Notify("teleport", "taking you to " .. picked)
 end)
 ```
 
-## quick test script (copy paste this)
+## quick copy-paste test script
 ```lua
--- load the good stuff
+-- STEP 1: load the good stuff
 loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Gui.lua"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/DirtosiedCleans/VortexUI/main/Notif.lua"))()
 
--- make your hack menu
-local window = VortexUI:Window("vortex test")
+-- STEP 2: make your hack menu
+local vortex = VortexUI:Window("sigma script v1")
 
--- make some pages for your hacks
-local MainTab = VortexUI:Tab(window, "hacks")
-local FunTab = VortexUI:Tab(window, "fun")
+-- STEP 3: make your pages
+local MainHacks = VortexUI:Tab(vortex, "main")
+local PlayerMods = VortexUI:Tab(vortex, "player")
+local TrollStuff = VortexUI:Tab(vortex, "troll")
 
--- add kill button
-VortexUI:Button(MainTab, "kill all", function()
-    VortexUI:Notify("boom", "everyone died")
+-- STEP 4: add hacks to main page
+VortexUI:Button(MainHacks, "kill all", function()
+    VortexUI:Notify("boom", "everyone died lol")
 end)
 
--- add auto farm toggle
-VortexUI:Toggle(MainTab, "auto farm", function(on)
+VortexUI:Toggle(MainHacks, "auto farm", function(on)
     VortexUI:Notify("farming", on and "getting rich" or "stopped")
 end)
 
--- add speed hack
-VortexUI:Slider(MainTab, "speed", 16, 500, function(speed)
+-- STEP 5: add player mods
+VortexUI:Slider(PlayerMods, "walkspeed", 16, 500, function(speed)
     game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = speed
 end)
 
--- add bobux button (totally real)
-VortexUI:Button(FunTab, "free bobux", function()
-    VortexUI:Question("bobux", "want free bobux?", function(answer)
-        if answer then
-            VortexUI:Notify("nice", "enjoy being rich")
-        else
-            VortexUI:Notify("bruh", "your loss")
-        end
-    end)
+VortexUI:Slider(PlayerMods, "jumppower", 50, 500, function(jump)
+    game.Players.LocalPlayer.Character.Humanoid.JumpPower = jump
 end)
 
--- let everyone know you loaded
-VortexUI:Notify("loaded", "vortex ready to hack")
+-- STEP 6: add troll stuff
+VortexUI:Button(TrollStuff, "free bobux", function()
+    VortexUI:Notify("scammed", "you actually believed this lol")
+end)
+
+VortexUI:Dropdown(TrollStuff, "teleport", {
+    "spawn",
+    "shop",
+    "secret room",
+    "admin base"
+}, function(place)
+    VortexUI:Notify("teleport", "taking you to " .. place)
+end)
+
+-- STEP 7: let them know it loaded
+VortexUI:Notify("loaded", "sigma script ready to hack")
 ```
 
-## cool stuff to know
+## sigma tips
 - press RightShift to hide/show your hacks
-- notifications stack up nicely
-- works on any executor (even the free ones)
+- notifications stack up on the right
+- works on trash executors (but in potato mode)
 - saves your settings automatically
 - has cool sounds and animations
 
-## supported executors
-these work best:
-- Velocity (the fast one)
-- Swift (the smooth one)
-- AWP (the pro one)
-- Atomic (the boom one)
+## how to be sigma
+1. put loadstrings at TOP of script
+2. make window FIRST
+3. make tabs SECOND
+4. add hacks to tabs THIRD
+5. test each hack FOURTH
+6. notify when stuff happens
+7. save your settings
+8. make it look cool
+9. dont make it obvious
+10. dont sell skidded scripts ( or you hate god and you are gay )
 
-if your executor is trash tier, it'll still work but in potato mode
-
-made by mxxer (skid it if you want but don't sell it you nerd)
+made by mxxer (skid it but dont sell it or youre beta)
