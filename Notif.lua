@@ -1,7 +1,52 @@
-local Notif = {
+local VortexSettings = {
+    Theme = {
+        Current = "Dark",
+        Presets = {
+            Purple = {
+                Background = Color3.fromRGB(15, 15, 20),
+                Secondary = Color3.fromRGB(25, 25, 30),
+                Accent = Color3.fromRGB(170, 0, 255),
+                Text = Color3.fromRGB(255, 255, 255)
+            },
+            Dark = {
+                Background = Color3.fromRGB(30, 30, 35),
+                Secondary = Color3.fromRGB(45, 45, 50),
+                Accent = Color3.fromRGB(65, 65, 70),
+                Text = Color3.fromRGB(255, 255, 255)
+            },
+            Light = {
+                Background = Color3.fromRGB(240, 240, 245),
+                Secondary = Color3.fromRGB(230, 230, 235),
+                Accent = Color3.fromRGB(220, 220, 225),
+                Text = Color3.fromRGB(30, 30, 35)
+            },
+            Ocean = {
+                Background = Color3.fromRGB(20, 40, 60),
+                Secondary = Color3.fromRGB(30, 50, 70),
+                Accent = Color3.fromRGB(0, 150, 255),
+                Text = Color3.fromRGB(255, 255, 255)
+            }
+        }
+    },
+    Notifications = {
+        Enabled = true,
+        Duration = 5,
+        Limit = 5,
+        Position = "TopRight",
+        Sound = true
+    }
+}
+
+local VortexNotif = {
     Active = {},
     Queue = {},
     LastError = nil,
+    Sound = {
+        Success = "rbxassetid://6518811702",
+        Error = "rbxassetid://6518811702",
+        Warning = "rbxassetid://6518811702",
+        Info = "rbxassetid://6518811702"
+    },
     Emojis = {
         success = "✅",
         error = "❌",
@@ -13,43 +58,28 @@ local Notif = {
 }
 
 local TweenService = game:GetService("TweenService")
-local HttpService = game:GetService("HttpService")
+local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 
-local function getSettings()
-    if not getgenv or not getgenv().VortexSettings then
-        return {
-            Theme = {
-                Current = "Purple",
-                Presets = {
-                    Purple = {
-                        Background = Color3.fromRGB(15, 15, 20),
-                        Secondary = Color3.fromRGB(25, 25, 30),
-                        Accent = Color3.fromRGB(170, 0, 255),
-                        Text = Color3.fromRGB(255, 255, 255)
-                    }
-                }
-            },
-            Notifications = {
-                Enabled = true,
-                Duration = 5,
-                Limit = 5,
-                Position = "BottomRight"
-            }
-        }
-    end
-    return getgenv().VortexSettings
+local function getTheme()
+    return VortexSettings.Theme.Presets[VortexSettings.Theme.Current] or VortexSettings.Theme.Presets.Dark
 end
 
-local function getTheme()
-    local settings = getSettings()
-    return settings.Theme.Presets[settings.Theme.Current] or settings.Theme.Presets.Purple
+local function playSound(soundType)
+    if not VortexSettings.Notifications.Sound then return end
+    
+    local sound = Instance.new("Sound")
+    sound.SoundId = VortexNotif.Sound[soundType] or VortexNotif.Sound.Info
+    sound.Volume = 0.5
+    sound.Parent = SoundService
+    sound:Play()
+    
+    game:GetService("Debris"):AddItem(sound, 1)
 end
 
 local function createNotification(options)
     local theme = getTheme()
-    local settings = getSettings()
     
     local success, gui = pcall(function()
         local newGui = Instance.new("ScreenGui")
@@ -63,29 +93,30 @@ local function createNotification(options)
         local main = Instance.new("Frame")
         main.Name = "Main"
         main.Size = UDim2.new(0, 300, 0, 80)
+        main.BackgroundColor3 = theme.Background
+        main.BorderSizePixel = 0
+        main.ClipsDescendants = true
         
         local positions = {
             TopRight = {
-                Start = UDim2.new(1, 20, 0, 20 + (#Notif.Active * 90)),
-                End = UDim2.new(1, -320, 0, 20 + (#Notif.Active * 90))
+                Start = UDim2.new(1, 20, 0, 20 + (#VortexNotif.Active * 90)),
+                End = UDim2.new(1, -320, 0, 20 + (#VortexNotif.Active * 90))
             },
             BottomRight = {
-                Start = UDim2.new(1, 20, 1, -90 - (#Notif.Active * 90)),
-                End = UDim2.new(1, -320, 1, -90 - (#Notif.Active * 90))
+                Start = UDim2.new(1, 20, 1, -90 - (#VortexNotif.Active * 90)),
+                End = UDim2.new(1, -320, 1, -90 - (#VortexNotif.Active * 90))
             },
             TopLeft = {
-                Start = UDim2.new(0, -320, 0, 20 + (#Notif.Active * 90)),
-                End = UDim2.new(0, 20, 0, 20 + (#Notif.Active * 90))
+                Start = UDim2.new(0, -320, 0, 20 + (#VortexNotif.Active * 90)),
+                End = UDim2.new(0, 20, 0, 20 + (#VortexNotif.Active * 90))
             },
             BottomLeft = {
-                Start = UDim2.new(0, -320, 1, -90 - (#Notif.Active * 90)),
-                End = UDim2.new(0, 20, 1, -90 - (#Notif.Active * 90))
+                Start = UDim2.new(0, -320, 1, -90 - (#VortexNotif.Active * 90)),
+                End = UDim2.new(0, 20, 1, -90 - (#VortexNotif.Active * 90))
             }
         }
         
-        main.Position = positions[settings.Notifications.Position or "BottomRight"].Start
-        main.BackgroundColor3 = theme.Background
-        main.BorderSizePixel = 0
+        main.Position = positions[VortexSettings.Notifications.Position or "TopRight"].Start
         main.Parent = newGui
         
         local shadow = Instance.new("ImageLabel")
@@ -104,7 +135,6 @@ local function createNotification(options)
         
         local accent = Instance.new("Frame")
         accent.Size = UDim2.new(0, 4, 1, 0)
-        accent.BackgroundColor3 = theme.Accent
         
         local accentColors = {
             error = Color3.fromRGB(255, 50, 50),
@@ -120,8 +150,35 @@ local function createNotification(options)
         
         Instance.new("UICorner", accent).CornerRadius = UDim.new(0, 8)
         
+        local closeBtn = Instance.new("TextButton")
+        closeBtn.Text = "×"
+        closeBtn.Size = UDim2.new(0, 20, 0, 20)
+        closeBtn.Position = UDim2.new(1, -25, 0, 5)
+        closeBtn.BackgroundTransparency = 1
+        closeBtn.TextColor3 = theme.Text
+        closeBtn.TextSize = 20
+        closeBtn.Font = Enum.Font.GothamBold
+        closeBtn.Parent = main
+        
+        closeBtn.MouseEnter:Connect(function()
+            TweenService:Create(closeBtn, TweenInfo.new(0.2), {TextColor3 = accentColors[options.type] or theme.Accent}):Play()
+        end)
+        
+        closeBtn.MouseLeave:Connect(function()
+            TweenService:Create(closeBtn, TweenInfo.new(0.2), {TextColor3 = theme.Text}):Play()
+        end)
+        
+        closeBtn.MouseButton1Click:Connect(function()
+            TweenService:Create(main, TweenInfo.new(0.2), {
+                Size = UDim2.new(0, 300, 0, 0),
+                Position = UDim2.new(main.Position.X.Scale, main.Position.X.Offset, main.Position.Y.Scale, main.Position.Y.Offset + 40)
+            }):Play()
+            task.wait(0.2)
+            newGui:Destroy()
+        end)
+        
         local emoji = Instance.new("TextLabel")
-        emoji.Text = Notif.Emojis[options.type] or ""
+        emoji.Text = VortexNotif.Emojis[options.type] or ""
         emoji.Size = UDim2.new(0, 25, 0, 25)
         emoji.Position = UDim2.new(0, 15, 0, 8)
         emoji.BackgroundTransparency = 1
@@ -179,6 +236,25 @@ local function createNotification(options)
             
             Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 4)
             
+            local function addButtonHoverEffect(button)
+                button.MouseEnter:Connect(function()
+                    TweenService:Create(button, TweenInfo.new(0.2), {
+                        BackgroundColor3 = accentColors[options.type] or theme.Accent,
+                        TextColor3 = theme.Background
+                    }):Play()
+                end)
+                
+                button.MouseLeave:Connect(function()
+                    TweenService:Create(button, TweenInfo.new(0.2), {
+                        BackgroundColor3 = theme.Secondary,
+                        TextColor3 = theme.Text
+                    }):Play()
+                end)
+            end
+            
+            addButtonHoverEffect(yesBtn)
+            addButtonHoverEffect(noBtn)
+            
             yesBtn.MouseButton1Click:Connect(function()
                 if options.callback then options.callback(true) end
                 newGui:Destroy()
@@ -190,19 +266,18 @@ local function createNotification(options)
             end)
         end
         
-        return newGui, main, positions[settings.Notifications.Position or "BottomRight"]
+        return newGui, main, positions[VortexSettings.Notifications.Position or "TopRight"]
     end)
     
     return success and gui or nil
 end
 
-function Notif:Show(options)
+function VortexNotif:Show(options)
     if type(options) ~= "table" then options = {} end
     
-    local settings = getSettings()
-    if not settings.Notifications.Enabled then return end
+    if not VortexSettings.Notifications.Enabled then return end
     
-    if #self.Active >= settings.Notifications.Limit then
+    if #self.Active >= VortexSettings.Notifications.Limit then
         if #self.Queue >= 10 then return end
         table.insert(self.Queue, options)
         return
@@ -211,13 +286,16 @@ function Notif:Show(options)
     local gui, main, positions = createNotification(options)
     if not gui or not main or not positions then return end
     
+    playSound(options.type or "info")
     table.insert(self.Active, gui)
     
-    TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+    main.Size = UDim2.new(0, 300, 0, 0)
+    TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Back), {
+        Size = UDim2.new(0, 300, 0, 80),
         Position = positions.End
     }):Play()
     
-    task.delay(options.duration or settings.Notifications.Duration, function()
+    task.delay(options.duration or VortexSettings.Notifications.Duration, function()
         local index = table.find(self.Active, gui)
         if index then
             table.remove(self.Active, index)
@@ -237,20 +315,21 @@ function Notif:Show(options)
             end
         end
         
-        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-            Position = positions.Start
+        TweenService:Create(main, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Size = UDim2.new(0, 300, 0, 0),
+            Position = UDim2.new(positions.Start.X.Scale, positions.Start.X.Offset, positions.Start.Y.Scale, positions.Start.Y.Offset + 40)
         }):Play()
         
         task.wait(0.3)
         gui:Destroy()
         
-        if #self.Queue > 0 and #self.Active < settings.Notifications.Limit then
+        if #self.Queue > 0 and #self.Active < VortexSettings.Notifications.Limit then
             self:Show(table.remove(self.Queue, 1))
         end
     end)
 end
 
-function Notif:Success(title, text, duration)
+function VortexNotif:Success(title, text, duration)
     self:Show({
         title = title,
         text = text,
@@ -259,7 +338,7 @@ function Notif:Success(title, text, duration)
     })
 end
 
-function Notif:Error(title, text, duration)
+function VortexNotif:Error(title, text, duration)
     self:Show({
         title = title,
         text = text,
@@ -268,7 +347,7 @@ function Notif:Error(title, text, duration)
     })
 end
 
-function Notif:Warning(title, text, duration)
+function VortexNotif:Warning(title, text, duration)
     self:Show({
         title = title,
         text = text,
@@ -277,7 +356,7 @@ function Notif:Warning(title, text, duration)
     })
 end
 
-function Notif:Info(title, text, duration)
+function VortexNotif:Info(title, text, duration)
     self:Show({
         title = title,
         text = text,
@@ -286,7 +365,7 @@ function Notif:Info(title, text, duration)
     })
 end
 
-function Notif:Question(title, text, callback)
+function VortexNotif:Question(title, text, callback)
     self:Show({
         title = title,
         text = text,
@@ -296,7 +375,7 @@ function Notif:Question(title, text, callback)
     })
 end
 
-function Notif:Feedback(title, text, duration)
+function VortexNotif:Feedback(title, text, duration)
     self:Show({
         title = title,
         text = text,
@@ -305,4 +384,4 @@ function Notif:Feedback(title, text, duration)
     })
 end
 
-return Notif
+return VortexNotif 
