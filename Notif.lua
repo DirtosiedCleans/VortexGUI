@@ -25,6 +25,12 @@ local VortexSettings = {
                 Secondary = Color3.fromRGB(30, 50, 70),
                 Accent = Color3.fromRGB(0, 150, 255),
                 Text = Color3.fromRGB(255, 255, 255)
+            },
+            Neon = {
+                Background = Color3.fromRGB(10, 10, 15),
+                Secondary = Color3.fromRGB(15, 15, 20),
+                Accent = Color3.fromRGB(0, 255, 140),
+                Text = Color3.fromRGB(255, 255, 255)
             }
         }
     },
@@ -62,6 +68,23 @@ local SoundService = game:GetService("SoundService")
 local CoreGui = game:GetService("CoreGui")
 local Players = game:GetService("Players")
 
+local function getUIParent()
+    if (syn and syn.protect_gui) or (gethui) then
+        local hui = gethui or gethidden or get_hidden_gui
+        if hui then
+            return hui()
+        end
+    end
+    
+    return CoreGui
+end
+
+local function protect(gui)
+    if syn and syn.protect_gui then
+        syn.protect_gui(gui)
+    end
+end
+
 local function getTheme()
     return VortexSettings.Theme.Presets[VortexSettings.Theme.Current] or VortexSettings.Theme.Presets.Dark
 end
@@ -72,10 +95,21 @@ local function playSound(soundType)
     local sound = Instance.new("Sound")
     sound.SoundId = VortexNotif.Sound[soundType] or VortexNotif.Sound.Info
     sound.Volume = 0.5
-    sound.Parent = SoundService
-    sound:Play()
     
-    game:GetService("Debris"):AddItem(sound, 1)
+    local success = pcall(function()
+        local soundGui = Instance.new("ScreenGui")
+        protect(soundGui)
+        soundGui.Parent = getUIParent()
+        sound.Parent = soundGui
+        sound:Play()
+        game:GetService("Debris"):AddItem(soundGui, 1)
+    end)
+    
+    if not success then
+        sound.Parent = SoundService
+        sound:Play()
+        game:GetService("Debris"):AddItem(sound, 1)
+    end
 end
 
 local function createNotification(options)
@@ -84,8 +118,16 @@ local function createNotification(options)
     local success, gui = pcall(function()
         local newGui = Instance.new("ScreenGui")
         newGui.Name = "VortexNotification"
+        newGui.DisplayOrder = 999999999
+        protect(newGui)
         
-        pcall(function() newGui.Parent = CoreGui end)
+        local parent = getUIParent()
+        newGui.Parent = parent
+        
+        if not newGui.Parent then
+            newGui.Parent = CoreGui
+        end
+        
         if not newGui.Parent then
             newGui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
         end
@@ -96,15 +138,20 @@ local function createNotification(options)
         main.BackgroundColor3 = theme.Background
         main.BorderSizePixel = 0
         main.ClipsDescendants = true
+        main.ZIndex = 999999999
+        
+        local blur = Instance.new("BlurEffect")
+        blur.Size = 10
+        blur.Parent = main
         
         local positions = {
             TopRight = {
                 Start = UDim2.new(1, 20, 0, 20 + (#VortexNotif.Active * 90)),
-                End = UDim2.new(1, -320, 0, 20 + (#VortexNotif.Active * 90))
+                End = UDim2.new(1, -20, 0, 20 + (#VortexNotif.Active * 90))
             },
             BottomRight = {
                 Start = UDim2.new(1, 20, 1, -90 - (#VortexNotif.Active * 90)),
-                End = UDim2.new(1, -320, 1, -90 - (#VortexNotif.Active * 90))
+                End = UDim2.new(1, -20, 1, -90 - (#VortexNotif.Active * 90))
             },
             TopLeft = {
                 Start = UDim2.new(0, -320, 0, 20 + (#VortexNotif.Active * 90)),
@@ -125,13 +172,21 @@ local function createNotification(options)
         shadow.BackgroundTransparency = 1
         shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
         shadow.Size = UDim2.new(1, 47, 1, 47)
-        shadow.ZIndex = 0
+        shadow.ZIndex = 999999998
         shadow.Image = "rbxassetid://6015897843"
         shadow.ImageColor3 = Color3.new(0, 0, 0)
         shadow.ImageTransparency = 0.5
         shadow.Parent = main
         
-        Instance.new("UICorner", main).CornerRadius = UDim.new(0, 8)
+        local corner = Instance.new("UICorner", main)
+        corner.CornerRadius = UDim.new(0, 8)
+        
+        local gradient = Instance.new("UIGradient")
+        gradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, theme.Background),
+            ColorSequenceKeypoint.new(1, theme.Secondary)
+        })
+        gradient.Parent = main
         
         local accent = Instance.new("Frame")
         accent.Size = UDim2.new(0, 4, 1, 0)
@@ -158,6 +213,7 @@ local function createNotification(options)
         closeBtn.TextColor3 = theme.Text
         closeBtn.TextSize = 20
         closeBtn.Font = Enum.Font.GothamBold
+        closeBtn.ZIndex = 999999999
         closeBtn.Parent = main
         
         closeBtn.MouseEnter:Connect(function()
@@ -185,6 +241,7 @@ local function createNotification(options)
         emoji.TextColor3 = theme.Text
         emoji.Font = Enum.Font.GothamBold
         emoji.TextSize = 16
+        emoji.ZIndex = 999999999
         emoji.Parent = main
         
         local title = Instance.new("TextLabel")
@@ -196,6 +253,7 @@ local function createNotification(options)
         title.TextXAlignment = Enum.TextXAlignment.Left
         title.Font = Enum.Font.GothamBold
         title.TextSize = 14
+        title.ZIndex = 999999999
         title.Parent = main
         
         local message = Instance.new("TextLabel")
@@ -209,6 +267,7 @@ local function createNotification(options)
         message.Font = Enum.Font.Gotham
         message.TextSize = 13
         message.TextWrapped = true
+        message.ZIndex = 999999999
         message.Parent = main
         
         if options.type == "question" then
@@ -220,6 +279,7 @@ local function createNotification(options)
             yesBtn.TextColor3 = theme.Text
             yesBtn.Font = Enum.Font.GothamBold
             yesBtn.TextSize = 12
+            yesBtn.ZIndex = 999999999
             yesBtn.Parent = main
             
             Instance.new("UICorner", yesBtn).CornerRadius = UDim.new(0, 4)
@@ -232,6 +292,7 @@ local function createNotification(options)
             noBtn.TextColor3 = theme.Text
             noBtn.Font = Enum.Font.GothamBold
             noBtn.TextSize = 12
+            noBtn.ZIndex = 999999999
             noBtn.Parent = main
             
             Instance.new("UICorner", noBtn).CornerRadius = UDim.new(0, 4)
